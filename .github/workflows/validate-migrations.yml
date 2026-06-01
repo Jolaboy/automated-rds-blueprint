@@ -1,0 +1,40 @@
+name: Database Migration Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    # Spin up a transient PostgreSQL instance inside the runner
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: runner_user
+          POSTGRES_PASSWORD: runner_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Run Flyway Migration Validation
+        uses: flyway/flyway-github-action@v9
+        with:
+          url: jdbc:postgresql://postgres:5432/test_db
+          user: runner_user
+          password: runner_password
+          locations: filesystem:migrations
+          command: migrate

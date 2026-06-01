@@ -1,0 +1,11 @@
+# Database connection secrets
+*.env
+flyway.conf
+
+# OS / IDE metadata
+.DS_Store
+.vscode/
+.idea/
+
+# Local logs
+*.log
