@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/start-local-db.sh
 
-echo "🚀 Spinning up local PostgreSQL sandbox..."
+echo " Spinning up local PostgreSQL sandbox..."
 docker run --name rds-blueprint-local \
   -e POSTGRES_DB=blueprint_db \
   -e POSTGRES_USER=db_operator \

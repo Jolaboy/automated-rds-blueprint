@@ -9,6 +9,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      FLYWAY_VERSION: '10'
 
     # Spin up a transient PostgreSQL instance inside the runner
     services:
@@ -30,11 +32,17 @@ jobs:
       - name: Checkout repository code
         uses: actions/checkout@v4
 
+      - name: Cache Flyway CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.flyway
+          key: ${{ runner.os }}-flyway-${{ env.FLYWAY_VERSION }}
+
       - name: Run Flyway Migration Validation
-        uses: flyway/flyway-github-action@v9
+        uses: flyway/flyway-action@v2
         with:
           url: jdbc:postgresql://postgres:5432/test_db
           user: runner_user
           password: runner_password
           locations: filesystem:migrations
-          command: migrate
+          args: -connectRetries=10 migrate

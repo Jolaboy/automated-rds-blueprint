@@ -1,0 +1,10 @@
+# Example Flyway configuration (flyway.conf)
+# Copy to flyway.conf and adjust secrets before running locally or in CI.
+
+flyway.url=jdbc:postgresql://localhost:5432/blueprint_db
+flyway.user=db_operator
+flyway.password=SuperSecurePassword123!
+flyway.locations=filesystem:migrations
+flyway.connectRetries=10
+# Uncomment to baseline existing DBs when migrating
+# flyway.baselineOnMigrate=true

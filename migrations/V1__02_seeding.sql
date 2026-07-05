@@ -41,6 +41,7 @@ BEGIN
     RAISE NOTICE 'Seeding completed successfully. Committing transaction.';
 EXCEPTION
     WHEN OTHERS THEN
-        RAISE WARNING 'An error occurred during seeding. Rolling back changes. Error: %', SQLERRM;
-        ROLLBACK;
+        -- Re-raising inside the block ensures the surrounding transaction rolls back.
+        -- ROLLBACK is not permitted inside a PL/pgSQL block and would raise 2D000.
+        RAISE EXCEPTION 'An error occurred during seeding. Rolling back changes. Error: %', SQLERRM;
 END $$;
