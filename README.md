@@ -4,6 +4,55 @@ An infrastructure-level repository for automated schema creation, transactional 
 
 ---
 
+## Architecture Topology
+
+The diagram below summarizes the intended deployment and integration topology for this blueprint. It covers local development, CI validation, and production AWS RDS deployment with common services.
+
+```mermaid
+graph TD
+    Developer["Developer"]
+    Repo["GitHub Repo"]
+    CI["GitHub Actions CI"]
+    Flyway["Flyway Migration Runner"]
+    LocalDB["Local Postgres (Docker)"]
+    AWS["AWS Account"]
+    VPC["VPC"]
+    PublicSubnet["Public Subnet"]
+    PrivateSubnet["Private Subnet"]
+    Bastion["Bastion / Jump Host"]
+    RDS["RDS PostgreSQL (Multi-AZ)"]
+    RDSProxy["RDS Proxy"]
+    Secrets["AWS Secrets Manager"]
+
+    Developer -->|"push/pr"| Repo
+    Repo --> CI
+    CI --> Flyway
+    Flyway --> LocalDB
+
+    Developer -->|"optional local test"| LocalDB
+
+    Repo -->|"deploy"| AWS
+    AWS --> VPC
+    VPC --> PublicSubnet
+    VPC --> PrivateSubnet
+    PublicSubnet --> Bastion
+    PrivateSubnet --> RDS
+    RDS --> RDSProxy
+    AWS --> Secrets
+    Secrets --> RDSProxy
+
+    style RDS fill:#fffbcc,stroke:#f2c14e
+    style Secrets fill:#e6f7ff,stroke:#66b3ff
+```
+
+Short notes:
+- CI uses a transient Postgres instance to validate migrations — this prevents breaking schema changes from merging.
+- Production should deploy RDS inside private subnets, fronted by an RDS Proxy and with secrets stored in AWS Secrets Manager or Parameter Store.
+- For high availability enable Multi-AZ and automated backups; for read-scaling consider Read Replicas.
+
+---
+
+
 ## Repository Layout
 
 ```text
@@ -86,57 +135,8 @@ Typical CI validation (GitHub Actions) does:
 
 ---
 
-## Architecture Topology
-
-The diagram below summarizes the intended deployment and integration topology for this blueprint. It covers local development, CI validation, and production AWS RDS deployment with common services.
-
-```mermaid
-graph TD
-    Developer["Developer"]
-    Repo["GitHub Repo"]
-    CI["GitHub Actions CI"]
-    Flyway["Flyway Migration Runner"]
-    LocalDB["Local Postgres (Docker)"]
-    AWS["AWS Account"]
-    VPC["VPC"]
-    PublicSubnet["Public Subnet"]
-    PrivateSubnet["Private Subnet"]
-    Bastion["Bastion / Jump Host"]
-    RDS["RDS PostgreSQL (Multi-AZ)"]
-    RDSProxy["RDS Proxy"]
-    Secrets["AWS Secrets Manager"]
-
-    Developer -->|"push/pr"| Repo
-    Repo --> CI
-    CI --> Flyway
-    Flyway --> LocalDB
-
-    Developer -->|"optional local test"| LocalDB
-
-    Repo -->|"deploy"| AWS
-    AWS --> VPC
-    VPC --> PublicSubnet
-    VPC --> PrivateSubnet
-    PublicSubnet --> Bastion
-    PrivateSubnet --> RDS
-    RDS --> RDSProxy
-    AWS --> Secrets
-    Secrets --> RDSProxy
-
-    style RDS fill:#fffbcc,stroke:#f2c14e
-    style Secrets fill:#e6f7ff,stroke:#66b3ff
-```
-
-Short notes:
-- CI uses a transient Postgres instance to validate migrations — this prevents breaking schema changes from merging.
-- Production should deploy RDS inside private subnets, fronted by an RDS Proxy and with secrets stored in AWS Secrets Manager or Parameter Store.
-- For high availability enable Multi-AZ and automated backups; for read-scaling consider Read Replicas.
-
----
-
 ## Next Steps
 
 - Keep migration files small and focused: one logical change per versioned file.
 - Add integration tests that assert expected DDL and critical constraints.
 - If you'd like, I can add a `flyway.conf` example or a GitHub Actions validation workflow.
-
