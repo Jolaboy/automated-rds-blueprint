@@ -38,11 +38,20 @@ jobs:
           path: ~/.flyway
           key: ${{ runner.os }}-flyway-${{ env.FLYWAY_VERSION }}
 
+      - name: Install Flyway CLI
+        run: |
+          mkdir -p $HOME/.flyway
+          curl -sL "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${{ env.FLYWAY_VERSION }}/flyway-commandline-${{ env.FLYWAY_VERSION }}.tar.gz" \
+            | tar xz -C $HOME/.flyway --strip-components=1
+          export PATH="$HOME/.flyway:$PATH"
+          flyway -v
+
       - name: Run Flyway Migration Validation
-        uses: flyway/flyway-action@v2
-        with:
-          url: jdbc:postgresql://postgres:5432/test_db
-          user: runner_user
-          password: runner_password
-          locations: filesystem:migrations
-          args: -connectRetries=10 migrate
+        env:
+          FLYWAY_URL: jdbc:postgresql://postgres:5432/test_db
+          FLYWAY_USER: runner_user
+          FLYWAY_PASSWORD: runner_password
+        run: |
+          export PATH="$HOME/.flyway:$PATH"
+          flyway -url="$FLYWAY_URL" -user="$FLYWAY_USER" -password="$FLYWAY_PASSWORD" -locations=filesystem:migrations -connectRetries=10 info
+          flyway -url="$FLYWAY_URL" -user="$FLYWAY_USER" -password="$FLYWAY_PASSWORD" -locations=filesystem:migrations -connectRetries=10 migrate

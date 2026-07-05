@@ -139,4 +139,3 @@ Typical CI validation (GitHub Actions) does:
 
 - Keep migration files small and focused: one logical change per versioned file.
 - Add integration tests that assert expected DDL and critical constraints.
-- If you'd like, I can add a `flyway.conf` example or a GitHub Actions validation workflow.
