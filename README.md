@@ -92,28 +92,28 @@ The diagram below summarizes the intended deployment and integration topology fo
 
 ```mermaid
 graph TD
-    Developer[Developer]
-    Repo[GitHub Repo]
-    CI[GitHub Actions CI]
-    Flyway[Flyway Migration Runner]
-    LocalDB[Local Postgres (Docker)]
-    AWS[AWS Account]
-    VPC[VPC]
-    PublicSubnet[Public Subnet]
-    PrivateSubnet[Private Subnet]
-    Bastion[Bastion / Jump Host]
-    RDS[RDS PostgreSQL (Multi-AZ)]
-    RDSProxy[RDS Proxy]
-    Secrets[AWS Secrets Manager]
+    Developer["Developer"]
+    Repo["GitHub Repo"]
+    CI["GitHub Actions CI"]
+    Flyway["Flyway Migration Runner"]
+    LocalDB["Local Postgres (Docker)"]
+    AWS["AWS Account"]
+    VPC["VPC"]
+    PublicSubnet["Public Subnet"]
+    PrivateSubnet["Private Subnet"]
+    Bastion["Bastion / Jump Host"]
+    RDS["RDS PostgreSQL (Multi-AZ)"]
+    RDSProxy["RDS Proxy"]
+    Secrets["AWS Secrets Manager"]
 
-    Developer -->|push/pr| Repo
+    Developer -->|"push/pr"| Repo
     Repo --> CI
     CI --> Flyway
     Flyway --> LocalDB
 
-    Developer -->|optional local test| LocalDB
+    Developer -->|"optional local test"| LocalDB
 
-    Repo -->|deploy| AWS
+    Repo -->|"deploy"| AWS
     AWS --> VPC
     VPC --> PublicSubnet
     VPC --> PrivateSubnet
